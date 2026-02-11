@@ -1,18 +1,19 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
 public class PlayerCoinCollector : MonoBehaviour
 {
-    public UnityEvent<int> OnCoinsChanged; // Evento per UI
-
     private int _coins = 0;
 
-    public void AddCoins(int amount)
+    // Evento che passa il numero totale di monete raccolte
+    public UnityEvent<int> OnCoinsChanged;
+
+    public void AddCoins(int value)
     {
-        _coins += amount;
-        OnCoinsChanged.Invoke(_coins); // Aggiorna UI
+        _coins += value;
+        Debug.Log("Monete raccolte: " + _coins); // <-- per test
+        if (OnCoinsChanged != null)
+            OnCoinsChanged.Invoke(_coins); // Passa il numero aggiornato
     }
 
     public int GetCoins() => _coins;

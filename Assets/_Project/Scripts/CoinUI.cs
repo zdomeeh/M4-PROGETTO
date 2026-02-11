@@ -12,4 +12,9 @@ public class CoinUI : MonoBehaviour
         if (_coinText != null)
             _coinText.text = "Coins: " + coins;
     }
+
+    public void Test(int value)
+    {
+        Debug.Log("UI riceve valore: " + value);
+    }
 }
