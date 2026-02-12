@@ -4,10 +4,10 @@ using UnityEngine;
 
 public class TurretStraight : MonoBehaviour
 {
-    [SerializeField] private GameObject _projectilePrefab; // prefab del proiettile
-    [SerializeField] private Transform _firePoint;         // punto da cui sparare
-    [SerializeField] private float _fireRate = 1f;         // colpi al secondo
-    [SerializeField] private float _projectileSpeed = 10f;
+    [SerializeField] private GameObject _projectilePrefab;
+    [SerializeField] private Transform _firePoint;
+    [SerializeField] private float _fireRate = 1f;
+    [SerializeField] private float _projectileSpeed = 5f; // più basso per test visibile
 
     private float _nextFireTime = 0f;
 
@@ -24,8 +24,8 @@ public class TurretStraight : MonoBehaviour
     {
         if (_projectilePrefab != null && _firePoint != null)
         {
-            GameObject projectile = Instantiate(_projectilePrefab, _firePoint.position, _firePoint.rotation);
-            Rigidbody rb = projectile.GetComponent<Rigidbody>();
+            GameObject proj = Instantiate(_projectilePrefab, _firePoint.position, _firePoint.rotation);
+            Rigidbody rb = proj.GetComponent<Rigidbody>();
             if (rb != null)
             {
                 rb.velocity = _firePoint.forward * _projectileSpeed;

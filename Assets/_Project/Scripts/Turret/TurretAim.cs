@@ -4,66 +4,70 @@ using UnityEngine;
 
 public class TurretAim : MonoBehaviour
 {
-    [SerializeField] private GameObject _projectilePrefab; // proiettile
-    [SerializeField] private Transform _firePoint;         // punto da cui sparare
-    [SerializeField] private float _fireRate = 1f;         // colpi al secondo
-    [SerializeField] private float _projectileSpeed = 10f;
+    [SerializeField] private GameObject _projectilePrefab;  // prefab del proiettile
+    [SerializeField] private Transform _firePoint;          // punto da cui sparare
+    [SerializeField] private float _fireRate = 1f;          // colpi al secondo
+    [SerializeField] private float _projectileSpeed = 10f;  // velocità del proiettile
 
-    [SerializeField] private Transform _player;            // player da seguire
-    [SerializeField] private float _rotationSpeed = 5f;    // velocità rotazione verso player
+    [SerializeField] private Transform _player;             // player da seguire
+    [SerializeField] private float _rotationSpeed = 5f;     // velocità rotazione
+    [SerializeField] private float _detectionRadius = 10f;  // raggio di attivazione
 
-    private bool _playerInRange = false;
     private float _nextFireTime = 0f;
 
     void Update()
     {
-        if (_playerInRange && _player != null)
-        {
-            // Ruota verso il player
-            Vector3 targetDir = _player.position - transform.position;
-            targetDir.y = 0; // mantiene l'orientamento orizzontale
-            if (targetDir != Vector3.zero)
-            {
-                Quaternion targetRot = Quaternion.LookRotation(targetDir);
-                transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, _rotationSpeed * Time.deltaTime);
-            }
+        if (_player == null || _firePoint == null || _projectilePrefab == null)
+            return;
 
-            // Spara se è tempo
-            if (Time.time >= _nextFireTime)
-            {
-                Fire();
-                _nextFireTime = Time.time + 1f / _fireRate;
-            }
+        // Controlla se il player è nel raggio
+        bool playerInRange = Physics.CheckSphere(transform.position, _detectionRadius, LayerMask.GetMask("Player"));
+
+        if (playerInRange)
+        {
+            RotateTowardsPlayer();
+            TryFire();
+        }
+    }
+
+    // Ruota solo sull'asse Y verso il player
+    void RotateTowardsPlayer()
+    {
+        Vector3 targetDir = _player.position - transform.position;
+        targetDir.y = 0f; // ignora altezza
+
+        if (targetDir.sqrMagnitude > 0.01f)
+        {
+            Quaternion targetRot = Quaternion.LookRotation(targetDir);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, _rotationSpeed * Time.deltaTime);
+        }
+    }
+
+    // Spara proiettile verso player
+    void TryFire()
+    {
+        if (Time.time >= _nextFireTime)
+        {
+            Fire();
+            _nextFireTime = Time.time + 1f / _fireRate;
         }
     }
 
     void Fire()
     {
-        if (_projectilePrefab != null && _firePoint != null)
+        GameObject projectile = Instantiate(_projectilePrefab, _firePoint.position, _firePoint.rotation);
+        Rigidbody rb = projectile.GetComponent<Rigidbody>();
+        if (rb != null)
         {
-            GameObject projectile = Instantiate(_projectilePrefab, _firePoint.position, _firePoint.rotation);
-            Rigidbody rb = projectile.GetComponent<Rigidbody>();
-            if (rb != null)
-            {
-                rb.velocity = (_player.position - _firePoint.position).normalized * _projectileSpeed;
-            }
+            Vector3 dir = (_player.position + Vector3.up * 1f - _firePoint.position).normalized;
+            rb.velocity = dir * _projectileSpeed;
         }
     }
 
-    // Trigger di attivazione
-    private void OnTriggerEnter(Collider other)
+    // Mostra il raggio in scena per debug
+    private void OnDrawGizmosSelected()
     {
-        if (other.CompareTag("Player"))
-        {
-            _playerInRange = true;
-        }
-    }
-
-    private void OnTriggerExit(Collider other)
-    {
-        if (other.CompareTag("Player"))
-        {
-            _playerInRange = false;
-        }
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, _detectionRadius);
     }
 }

@@ -19,6 +19,9 @@ public class TurretProjectile : MonoBehaviour
         {
             life.AddHP(-_damage);
         }
-        Destroy(gameObject);
+
+        // distrugge solo se colpisce il player
+        if (other.CompareTag("Player"))
+            Destroy(gameObject);
     }
 }
