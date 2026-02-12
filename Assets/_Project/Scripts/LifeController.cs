@@ -44,7 +44,6 @@ public class LifeController : MonoBehaviour
     }
 
     // Metodo di test rapido per infliggere danno
-    [ContextMenu("Inflict 20 Damage")]
     public void Inflict20Damage()
     {
         AddHP(-20);

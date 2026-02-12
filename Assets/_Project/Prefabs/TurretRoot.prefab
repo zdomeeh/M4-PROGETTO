@@ -48,11 +48,11 @@ MonoBehaviour:
   _projectilePrefab: {fileID: 898715527982696024, guid: fb6e9e730fef4864cbf9ce4109ccec33,
     type: 3}
   _firePoint: {fileID: 7888314142798149082}
-  _fireRate: 2
-  _projectileSpeed: 5
+  _fireRate: 1
+  _projectileSpeed: 15
   _player: {fileID: 0}
   _rotationSpeed: 5
-  _detectionRadius: 10
+  _detectionRadius: 15.5
 --- !u!1 &5048453923835180158
 GameObject:
   m_ObjectHideFlags: 0
@@ -302,7 +302,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 1413
+  m_VersionIndex: 1422
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
