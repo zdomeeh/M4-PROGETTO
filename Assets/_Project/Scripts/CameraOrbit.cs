@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -28,8 +28,8 @@ public class CameraOrbit : MonoBehaviour
 
         // Calcolo posizione della camera
         Vector3 offset = new Vector3(0, height, -distance);
-        Quaternion rotation = Quaternion.Euler(0, horizontalAngle, 0);
-        transform.position = player.position + rotation * offset;
+        Quaternion rotation = Quaternion.Euler(0, horizontalAngle, 0); // Rotazione attorno all’asse Y
+        transform.position = player.position + rotation * offset; // Posiziona la camera dietro e sopra il player
 
         // Guarda sempre il player
         transform.LookAt(player.position + Vector3.up * height);

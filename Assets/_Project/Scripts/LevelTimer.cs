@@ -37,4 +37,16 @@ public class LevelTimer : MonoBehaviour
             OnTimeEnded.Invoke();
         }
     }
+
+    public void AddTime(float seconds)
+    {
+        _currentTime += seconds;
+
+        // Non superare il tempo iniziale (opzionale)
+        if (_currentTime > _timeInSeconds)
+            _currentTime = _timeInSeconds;
+
+        // Aggiorna subito l'UI
+        OnTimeChanged.Invoke(_currentTime);
+    }
 }

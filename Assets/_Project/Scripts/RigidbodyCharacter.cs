@@ -8,6 +8,7 @@ public class RigidbodyCharacter : MonoBehaviour
     [SerializeField] private float GroundDistance = 0.2f;
     [SerializeField] private LayerMask Ground;
     [SerializeField] private Transform _groundChecker;
+    [SerializeField] private Transform _cameraTransform;
 
     private Rigidbody _body;
     private Vector3 _inputs = Vector3.zero;
@@ -19,20 +20,20 @@ public class RigidbodyCharacter : MonoBehaviour
 
     void Start()
     {
-        // Prendo il Rigidbody una volta sola
+        // Recupera il Rigidbody una sola volta
         _body = GetComponent<Rigidbody>();
 
-        // Se non è stato assegnato, uso il primo figlio come GroundChecker
+        // Se non assegnato, usa il primo figlio come GroundChecker
         if (_groundChecker == null)
             _groundChecker = transform.GetChild(0);
     }
 
     void Update()
     {
-        // Memorizzo lo stato precedente per verificare se cambia
+        // Salva lo stato precedente del grounding
         bool wasGrounded = _isGrounded;
 
-        // Controllo se il player è a terra usando una sfera sotto i piedi
+        // Controlla se il player è a terra con una sfera sotto i piedi
         _isGrounded = Physics.CheckSphere(
             _groundChecker.position,
             GroundDistance,
@@ -40,42 +41,48 @@ public class RigidbodyCharacter : MonoBehaviour
             QueryTriggerInteraction.Ignore
         );
 
-        // Se il grounding è cambiato, invoco l'evento corrispondente
+        // Se cambia lo stato di grounding, notifica l’evento
         if (wasGrounded != _isGrounded)
-        {
             OnIsGrounded.Invoke(_isGrounded);
-        }
 
-        // Leggo input WASD / frecce
+        // Legge input da tastiera
         Vector2 moveInput = new Vector2(
             Input.GetAxis("Horizontal"),
             Input.GetAxis("Vertical")
         );
 
-        // Normalizzo l'input se supera 1 (es. diagonale)
+        // Normalizza l’input per evitare velocità maggiore in diagonale
         float sqrtLength = moveInput.sqrMagnitude;
         if (sqrtLength > 1)
             moveInput /= Mathf.Sqrt(sqrtLength);
 
-        // Salvo input in _inputs (usato nel FixedUpdate)
-        _inputs = Vector3.zero;
-        _inputs.x = moveInput.x;
-        _inputs.z = moveInput.y;
+        // Direzioni della camera sul piano orizzontale
+        Vector3 cameraForward = _cameraTransform.forward;
+        Vector3 cameraRight = _cameraTransform.right;
 
-        // Ruoto il player verso la direzione di camminata
+        cameraForward.y = 0;
+        cameraRight.y = 0;
+
+        cameraForward.Normalize();
+        cameraRight.Normalize();
+
+        // Movimento relativo alla camera
+        _inputs = cameraForward * moveInput.y + cameraRight * moveInput.x;
+
+        // Ruota il player verso la direzione di movimento
         if (_inputs != Vector3.zero)
             transform.forward = _inputs;
 
-        // Aggiorno evento della velocità orizzontale (utile per animazioni)
+        // Aggiorna evento per animazioni
         OnUpdateHorizontalSpeed.Invoke(_inputs.sqrMagnitude);
 
         // Gestione salto
         if (Input.GetButtonDown("Jump") && _isGrounded)
         {
-            // Evento per collegare animazioni o suoni
+            // Evento per animazioni / suoni
             OnJump.Invoke();
 
-            // Calcolo la forza necessaria per il salto e la applico al Rigidbody
+            // Applica una forza istantanea verso l’alto
             _body.AddForce(
                 Vector3.up * Mathf.Sqrt(JumpHeight * -2f * Physics.gravity.y),
                 ForceMode.VelocityChange
@@ -85,7 +92,7 @@ public class RigidbodyCharacter : MonoBehaviour
 
     void FixedUpdate()
     {
-        // Movimento fisico usando Rigidbody.MovePosition
+        // Movimento fisico del player
         _body.MovePosition(
             _body.position + _inputs * Speed * Time.fixedDeltaTime
         );
@@ -93,7 +100,7 @@ public class RigidbodyCharacter : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        // Disegna una sfera blu sotto i piedi per vedere il ground check
+        // Disegna la sfera del ground check per debug
         if (_groundChecker != null)
         {
             Gizmos.color = Color.blue;
