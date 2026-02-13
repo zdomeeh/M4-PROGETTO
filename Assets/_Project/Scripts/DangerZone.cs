@@ -1,28 +1,46 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class DangerZone : MonoBehaviour
 {
-    [SerializeField] private int _damagePerSecond = 20;
-    private float _timer;
+    [SerializeField] private int _damagePerTick = 20;
+    [SerializeField] private float _damageInterval = 0.3f; // più veloce di 1 secondo
+
+    private float _timer = 0f;
+    private LifeController _currentLife = null;
+
+    private void OnTriggerEnter(Collider other)
+    {
+        LifeController life = other.GetComponent<LifeController>();
+        if (life == null)
+            return;
+
+        // Danno immediato appena cade
+        life.AddHP(-_damagePerTick);
+
+        _currentLife = life;
+        _timer = 0f;
+    }
 
     private void OnTriggerStay(Collider other)
     {
-        LifeController life = other.GetComponent<LifeController>();
-        if (life == null) return;
+        if (_currentLife == null)
+            return;
 
         _timer += Time.deltaTime;
 
-        if (_timer >= 1f)
+        if (_timer >= _damageInterval)
         {
-            life.AddHP(-_damagePerSecond);
+            _currentLife.AddHP(-_damagePerTick);
             _timer = 0f;
         }
     }
 
     private void OnTriggerExit(Collider other)
     {
-        _timer = 0f;
+        if (other.GetComponent<LifeController>() != null)
+        {
+            _currentLife = null;
+            _timer = 0f;
+        }
     }
 }

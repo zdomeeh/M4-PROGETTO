@@ -7,13 +7,14 @@ public class TurretStraight : MonoBehaviour
     [SerializeField] private GameObject _projectilePrefab;
     [SerializeField] private Transform _firePoint;
     [SerializeField] private float _fireRate = 1f;
-    [SerializeField] private float _projectileSpeed = 5f; // più basso per test visibile
+    [SerializeField] private float _projectileSpeed = 5f;
 
     private float _nextFireTime = 0f;
+    private bool _playerInRange = false; // indica se il player è nel collider
 
     void Update()
     {
-        if (Time.time >= _nextFireTime)
+        if (_playerInRange && Time.time >= _nextFireTime)
         {
             Fire();
             _nextFireTime = Time.time + 1f / _fireRate;
@@ -31,5 +32,19 @@ public class TurretStraight : MonoBehaviour
                 rb.velocity = _firePoint.forward * _projectileSpeed;
             }
         }
+    }
+
+    // Rileva quando il player entra nel collider
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Player"))
+            _playerInRange = true;
+    }
+
+    // Rileva quando il player esce dal collider
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("Player"))
+            _playerInRange = false;
     }
 }

@@ -16,7 +16,7 @@ PrefabInstance:
     - target: {fileID: 1130663343105658110, guid: 199730889a83e664e8bb9fdba0f7b047,
         type: 3}
       propertyPath: m_Name
-      value: Coin Variant
+      value: BronzeCoin
       objectReference: {fileID: 0}
     - target: {fileID: 2518103712342829324, guid: 199730889a83e664e8bb9fdba0f7b047,
         type: 3}
@@ -67,6 +67,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8233750440233877171, guid: 199730889a83e664e8bb9fdba0f7b047,
+        type: 3}
+      propertyPath: _value
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
