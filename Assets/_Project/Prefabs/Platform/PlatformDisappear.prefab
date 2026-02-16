@@ -421,4 +421,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _timeBeforeDisappear: 1
-  _respawnTime: 5
+  _respawnTime: 3
