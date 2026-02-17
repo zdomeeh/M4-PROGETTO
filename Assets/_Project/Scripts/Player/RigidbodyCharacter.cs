@@ -9,6 +9,7 @@ public class RigidbodyCharacter : MonoBehaviour
     [SerializeField] private LayerMask Ground;
     [SerializeField] private Transform _groundChecker;
     [SerializeField] private Transform _cameraTransform;
+    [SerializeField] private PlayerAudio _playerAudio;
 
     private Rigidbody _body;
     private Vector3 _inputs = Vector3.zero;
@@ -81,6 +82,9 @@ public class RigidbodyCharacter : MonoBehaviour
         {
             // Evento per animazioni / suoni
             OnJump.Invoke();
+
+            if (_playerAudio != null)
+                _playerAudio.PlayJump(); // applica il suono del salto
 
             // Applica una forza istantanea verso l’alto
             _body.AddForce(

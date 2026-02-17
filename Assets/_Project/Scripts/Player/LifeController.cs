@@ -10,6 +10,8 @@ public class LifeController : MonoBehaviour
     [SerializeField] private UnityEvent<int, int> _onHPChanged;
     [SerializeField] private UnityEvent _onDefeated;
 
+    [SerializeField] private PlayerAudio _playerAudio;
+
     private void Start()
     {
         // Inizializza vita piena se richiesto
@@ -22,7 +24,20 @@ public class LifeController : MonoBehaviour
     public int GetHP() => _currentHP;
     public int GetMaxHP() => _maxHP;
 
-    public void AddHP(int amount) => SetHP(_currentHP + amount);
+    public void AddHP(int amount)
+    {
+        // Se il player è già morto, non fare nulla
+        if (_currentHP <= 0)
+            return;
+
+        SetHP(_currentHP + amount);
+
+        // Suono danno solo se HP > 0
+        if (amount < 0 && _playerAudio != null && _currentHP > 0)
+        {
+            _playerAudio.PlayDamage();
+        }
+    }
 
     public void SetHP(int hp)
     {

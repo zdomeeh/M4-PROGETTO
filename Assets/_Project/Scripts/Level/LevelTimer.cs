@@ -47,4 +47,9 @@ public class LevelTimer : MonoBehaviour
         // Aggiorna l'UI
         OnTimeChanged.Invoke(_currentTime);
     }
+
+    public void StopTimer()
+    {
+        _isRunning = false; // il timer smette di scorrere
+    }
 }

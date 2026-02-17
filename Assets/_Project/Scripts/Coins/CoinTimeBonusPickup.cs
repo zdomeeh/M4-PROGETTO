@@ -3,6 +3,7 @@ using UnityEngine;
 public class CoinTimeBonusPickup : MonoBehaviour
 {
     [SerializeField] private float _timeBonus = 10f;
+    [SerializeField] private AudioClip _pickupClip;
 
     private void OnTriggerEnter(Collider other)
     {
@@ -15,6 +16,10 @@ public class CoinTimeBonusPickup : MonoBehaviour
             {
                 timer.AddTime(_timeBonus); // aggiunge tempo
             }
+
+            // Riproduce il suono della time coin
+            if (_pickupClip != null)
+                AudioSource.PlayClipAtPoint(_pickupClip, transform.position);
 
             Destroy(gameObject); // rimuove la moneta bonus
         }
