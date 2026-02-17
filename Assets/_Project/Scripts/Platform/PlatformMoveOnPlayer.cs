@@ -1,6 +1,5 @@
 using UnityEngine;
 
-[RequireComponent(typeof(Collider))]
 public class PlatformMoveOnPlayer : MonoBehaviour
 {
     [SerializeField] private Transform _pointA;
@@ -14,9 +13,9 @@ public class PlatformMoveOnPlayer : MonoBehaviour
 
     private void Start()
     {
-        transform.position = _pointA.position;
-        _target = _pointB.position;
-        _lastPosition = transform.position;
+        transform.position = _pointA.position; // Imposta la piattaforma al punto A all'inizio
+        _target = _pointB.position; // Imposta il target iniziale al punto B
+        _lastPosition = transform.position; // Salva la posizione iniziale per calcolare delta movimento
     }
 
     private void FixedUpdate()
@@ -51,8 +50,8 @@ public class PlatformMoveOnPlayer : MonoBehaviour
         if (collision.collider.CompareTag("Player"))
         {
             _playerOnPlatform = true;
-            _playerRb = collision.collider.GetComponent<Rigidbody>();
-            _lastPosition = transform.position; // importante per evitare scatti all'ingresso
+            _playerRb = collision.collider.GetComponent<Rigidbody>(); // Prende il Rigidbody del player per muoverlo insieme
+            _lastPosition = transform.position; // evita scatti all'ingresso
         }
     }
 

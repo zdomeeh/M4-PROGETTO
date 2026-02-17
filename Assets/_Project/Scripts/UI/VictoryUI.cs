@@ -1,5 +1,6 @@
 ﻿using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class VictoryUI : MonoBehaviour
 {
@@ -7,54 +8,61 @@ public class VictoryUI : MonoBehaviour
     [SerializeField] private GameObject _panelPerfectVictory;
 
     [SerializeField] private TextMeshProUGUI _coinsText;
-    [SerializeField] private TextMeshProUGUI _completionText;
+    [SerializeField] private TextMeshProUGUI _completionText; 
 
-    [SerializeField] private GameObject _extraStar; // stella grigia / bonus
+    [SerializeField] private GameObject _normalStar;   // stella grigia
+    [SerializeField] private GameObject _perfectStar;  // stella gialla
 
-    public void ShowVictory(PlayerCoinCollector collector, int requiredCoins)
+    public void ShowVictory(PlayerCoinCollector collector, int requiredCoins) // Mostra il pannello di vittoria corretto in base al numero di monete raccolte
     {
         if (collector == null) return;
 
-        int collected = collector.GetCoins();
-        int total = collector.TotalCoinsInLevel;
+        int collected = collector.GetCoins(); // Monete raccolte dal player
+        int total = collector.TotalCoinsInLevel; // Monete totali nel livello
 
-        // COMPLETION BASE SEMPRE 100%
-        if (_completionText != null)
-            _completionText.text = "Completion: 100%";
+        bool perfectRun = collected >= total; // Determina se la run è perfetta o normale
+        bool normalVictory = collected >= requiredCoins && collected < total;
 
         if (_coinsText != null)
-            _coinsText.text = "Coins: " + collected;
+            _coinsText.text = collected + " / " + total + " coins";
 
-        // PERFECT RUN tutte le monete
-        bool perfectRun = collected >= total;
-
+        // PERFECT RUN
         if (perfectRun)
         {
-            if (_panelVictory != null)
-                _panelVictory.SetActive(false);
+            _panelVictory?.SetActive(false);
+            _panelPerfectVictory?.SetActive(true);
 
-            if (_panelPerfectVictory != null)
-                _panelPerfectVictory.SetActive(true);
+            if (_completionText != null)
+                _completionText.text = "110% Completato";
+
+            _perfectStar?.SetActive(true);
+            _normalStar?.SetActive(false);
         }
+        // VITTORIA NORMALE
+        else if (normalVictory)
+        {
+            _panelVictory?.SetActive(true);
+            _panelPerfectVictory?.SetActive(false);
+
+            if (_completionText != null)
+                _completionText.text = "100% Completato";
+
+            _normalStar?.SetActive(true);
+            _perfectStar?.SetActive(false);
+        }
+        // Caso in cui il player non ha il minimo delle monete richiesto
         else
         {
-            if (_panelVictory != null)
-                _panelVictory.SetActive(true);
-
-            if (_panelPerfectVictory != null)
-                _panelPerfectVictory.SetActive(false);
-
-            // mostra stella grigia / extra
-            if (_extraStar != null)
-                _extraStar.SetActive(true);
+            Debug.Log("Non hai abbastanza monete per aprire la porta!");
+            return;
         }
 
-        Time.timeScale = 0f;
+        Time.timeScale = 0f; // pausa il gioco
     }
 
-    public void GoToMainMenu()
+    public void GoToMainMenu() // Torna al menu principale ripristinando il tempo
     {
         Time.timeScale = 1f;
-        UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
+        SceneManager.LoadScene("MainMenu");
     }
 }

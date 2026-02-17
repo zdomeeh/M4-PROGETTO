@@ -13,18 +13,13 @@ public class PlatformDisappear : MonoBehaviour
     {
         _renderer = GetComponent<Renderer>();
         _collider = GetComponent<Collider>();
-
-        if (_renderer == null)
-            Debug.LogWarning("PlatformDisappearRespawnPhysicsSafe: manca Renderer!");
-        if (_collider == null)
-            Debug.LogWarning("PlatformDisappearRespawnPhysicsSafe: manca Collider!");
     }
 
     private void OnCollisionEnter(Collision collision)
     {
         if (collision.collider.CompareTag("Player"))
         {
-            // Se il player è sopra, inizia la routine
+            // Se il player e' sopra, inizia la routine
             StartCoroutine(DisappearRoutine());
         }
     }
@@ -34,7 +29,7 @@ public class PlatformDisappear : MonoBehaviour
         // Aspetta prima di scomparire
         yield return new WaitForSeconds(_timeBeforeDisappear);
 
-        // Togli fisica e renderer
+        // toglie fisica e renderer
         if (_renderer != null)
             _renderer.enabled = false;
 
@@ -43,8 +38,7 @@ public class PlatformDisappear : MonoBehaviour
             // Disattiva il collider della piattaforma
             _collider.enabled = false;
 
-            // Sposta leggermente la piattaforma sotto il terreno
-            // così non interferisce col player
+            // Sposta leggermente la piattaforma sotto il terreno cosi' non interferisce con il player
             transform.position += Vector3.down * 5f;
         }
 

@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class TurretAim : MonoBehaviour
@@ -53,6 +51,7 @@ public class TurretAim : MonoBehaviour
         }
     }
 
+    // Istanzia un proiettile e gli assegna velocità verso il player
     void Fire()
     {
         GameObject projectile = Instantiate(_projectilePrefab, _firePoint.position, _firePoint.rotation);
@@ -64,7 +63,7 @@ public class TurretAim : MonoBehaviour
         }
     }
 
-    // Mostra il raggio in scena per debug
+    // Mostra il raggio in scena
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.red;

@@ -1,20 +1,18 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class MainMenuUI : MonoBehaviour
 {
-    // Avvia il gioco caricando il primo livello
+    // Avvia il gioco caricando il livello
     public void StartGame()
     {
-        SceneManager.LoadScene("LevelOne"); // cambia con il nome esatto della scena
+        SceneManager.LoadScene("LevelOne");
     }
 
     // Esce dall’applicazione
     public void ExitGame()
     {
         Application.Quit();
-        Debug.Log("Hai premuto Exit Game"); // utile per test in editor
+        Debug.Log("Hai premuto Exit Game"); 
     }
 }

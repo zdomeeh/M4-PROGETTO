@@ -42,10 +42,4 @@ public class LifeController : MonoBehaviour
             }
         }
     }
-
-    // Metodo di test rapido per infliggere danno
-    public void Inflict20Damage()
-    {
-        AddHP(-20);
-    }
 }
