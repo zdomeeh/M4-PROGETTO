@@ -15,6 +15,8 @@ public class CameraOrbit : MonoBehaviour
         {
             Debug.LogWarning("CameraOrbit: player non assegnato!");
         }
+
+        horizontalAngle = player.eulerAngles.y; // Allinea l'angolo della camera alla rotazione iniziale del player
     }
 
     void LateUpdate()

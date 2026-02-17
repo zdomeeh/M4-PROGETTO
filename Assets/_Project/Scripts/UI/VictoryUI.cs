@@ -13,6 +13,8 @@ public class VictoryUI : MonoBehaviour
     [SerializeField] private GameObject _normalStar;   // stella grigia
     [SerializeField] private GameObject _perfectStar;  // stella gialla
 
+    [SerializeField] private CameraOrbit _cameraOrbit; // riferimento per la camera
+
     public void ShowVictory(PlayerCoinCollector collector, int requiredCoins) // Mostra il pannello di vittoria corretto in base al numero di monete raccolte
     {
         if (collector == null) return;
@@ -56,6 +58,10 @@ public class VictoryUI : MonoBehaviour
             Debug.Log("Non hai abbastanza monete per aprire la porta!");
             return;
         }
+
+        // Blocca la camera
+        if (_cameraOrbit != null)
+            _cameraOrbit.enabled = false;
 
         Time.timeScale = 0f; // pausa il gioco
     }
