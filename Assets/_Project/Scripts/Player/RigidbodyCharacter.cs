@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEngine.Events;
 
 public class RigidbodyCharacter : MonoBehaviour
@@ -7,13 +7,20 @@ public class RigidbodyCharacter : MonoBehaviour
     [SerializeField] private float JumpHeight = 2f;
     [SerializeField] private float GroundDistance = 0.2f;
     [SerializeField] private LayerMask Ground;
+
+    [SerializeField] private float RotationSpeed = 12f;
+
+    [SerializeField] private float InputSmoothTime = 0.1f;
+
     [SerializeField] private Transform _groundChecker;
-    [SerializeField] private Transform _cameraTransform;
+    [SerializeField] private Transform _cameraPivot;
     [SerializeField] private PlayerAudio _playerAudio;
+    [SerializeField] private Animator _animator;
 
     private Rigidbody _body;
-    private Vector3 _inputs = Vector3.zero;
-    private bool _isGrounded = true;
+    private Vector3 _smoothedMoveInput;
+    private Vector3 _moveVelocity;
+    private bool _isGrounded;
 
     public UnityEvent<float> OnUpdateHorizontalSpeed;
     public UnityEvent<bool> OnIsGrounded;
@@ -21,20 +28,23 @@ public class RigidbodyCharacter : MonoBehaviour
 
     void Start()
     {
-        // Recupera il Rigidbody una sola volta
+        // Inizializzazione del Rigidbody
         _body = GetComponent<Rigidbody>();
+        _body.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+        _body.interpolation = RigidbodyInterpolation.Interpolate;
 
-        // Se non assegnato, usa il primo figlio come GroundChecker
+        // Disabilita root motion per l'Animator
+        _animator.applyRootMotion = false;
+
+        // Se non Ã¨ assegnato il ground checker, usa il primo figlio
         if (_groundChecker == null)
             _groundChecker = transform.GetChild(0);
     }
 
     void Update()
     {
-        // Salva lo stato precedente del grounding
+        // Controllo se il personaggio Ã¨ a terra
         bool wasGrounded = _isGrounded;
-
-        // Controlla se il player è a terra con una sfera sotto i piedi
         _isGrounded = Physics.CheckSphere(
             _groundChecker.position,
             GroundDistance,
@@ -42,73 +52,108 @@ public class RigidbodyCharacter : MonoBehaviour
             QueryTriggerInteraction.Ignore
         );
 
-        // Se cambia lo stato di grounding, notifica l’evento
+        // Se lo stato cambia, invia l'evento
         if (wasGrounded != _isGrounded)
             OnIsGrounded.Invoke(_isGrounded);
 
-        // Legge input da tastiera
-        Vector2 moveInput = new Vector2(
-            Input.GetAxis("Horizontal"),
-            Input.GetAxis("Vertical")
-        );
+        // Lettura input raw della tastiera per rotazione
+        float h = Input.GetAxisRaw("Horizontal");
+        float v = Input.GetAxisRaw("Vertical");
 
-        // Normalizza l’input per evitare velocità maggiore in diagonale
-        float sqrtLength = moveInput.sqrMagnitude;
-        if (sqrtLength > 1)
-            moveInput /= Mathf.Sqrt(sqrtLength);
+        // Calcolo direzione rispetto alla telecamera
+        Vector3 camForward = _cameraPivot.forward;
+        Vector3 camRight = _cameraPivot.right;
+        camForward.y = 0;
+        camRight.y = 0;
+        camForward.Normalize();
+        camRight.Normalize();
 
-        // Direzioni della camera sul piano orizzontale
-        Vector3 cameraForward = _cameraTransform.forward;
-        Vector3 cameraRight = _cameraTransform.right;
+        Vector3 rawInput = Vector3.zero;
+        if (Mathf.Abs(v) > 0.1f)
+            rawInput += camForward * Mathf.Sign(v);
+        if (Mathf.Abs(h) > 0.1f)
+            rawInput += camRight * Mathf.Sign(h);
+        rawInput = rawInput.normalized;
 
-        cameraForward.y = 0;
-        cameraRight.y = 0;
+        // Smoothing dell'input
+        // Se eravamo fermi e c'Ã¨ input, forziamo subito l'input per uscire da Idle
+        if (_smoothedMoveInput.magnitude < 0.01f && rawInput.magnitude > 0.01f)
+        {
+            _smoothedMoveInput = rawInput; // forziamo l'input immediatamente
+        }
+        else
+        {
+            _smoothedMoveInput = Vector3.SmoothDamp(
+                _smoothedMoveInput,
+                rawInput,
+                ref _moveVelocity,
+                InputSmoothTime
+            );
+        }
 
-        cameraForward.Normalize();
-        cameraRight.Normalize();
+        // Imposta a zero input molto piccoli per evitare problemi con il Blend Tree
+        if (_smoothedMoveInput.magnitude < 0.01f)
+            _smoothedMoveInput = Vector3.zero;
 
-        // Movimento relativo alla camera
-        _inputs = cameraForward * moveInput.y + cameraRight * moveInput.x;
+        // Rotazione del personaggio verso la direzione dell'input
+        if (rawInput.sqrMagnitude > 0.001f)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(rawInput);
+            transform.rotation = Quaternion.Slerp(
+                transform.rotation,
+                targetRotation,
+                RotationSpeed * Time.deltaTime
+            );
+        }
 
-        // Ruota il player verso la direzione di movimento
-        if (_inputs != Vector3.zero)
-            transform.forward = _inputs;
-
-        // Aggiorna evento per animazioni
-        OnUpdateHorizontalSpeed.Invoke(_inputs.sqrMagnitude);
+        // Aggiornamento parametri dell'Animator
+        Vector3 localMove = transform.InverseTransformDirection(_smoothedMoveInput);
+        _animator.SetFloat("MoveX", Mathf.Abs(localMove.x) < 0.01f ? 0f : localMove.x, 0.1f, Time.deltaTime);
+        _animator.SetFloat("MoveZ", Mathf.Abs(localMove.z) < 0.01f ? 0f : localMove.z, 0.1f, Time.deltaTime);
+        _animator.SetBool("IsGrounded", _isGrounded);
 
         // Gestione salto
         if (Input.GetButtonDown("Jump") && _isGrounded)
         {
-            // Evento per animazioni / suoni
-            OnJump.Invoke();
-
-            if (_playerAudio != null)
-                _playerAudio.PlayJump(); // applica il suono del salto
-
-            // Applica una forza istantanea verso l’alto
-            _body.AddForce(
-                Vector3.up * Mathf.Sqrt(JumpHeight * -2f * Physics.gravity.y),
-                ForceMode.VelocityChange
+            // Imposta la velocitÃ  verticale per saltare
+            _body.velocity = new Vector3(
+                _body.velocity.x,
+                Mathf.Sqrt(JumpHeight * -2f * Physics.gravity.y),
+                _body.velocity.z
             );
+
+            // Trigger animazione salto
+            _animator.SetTrigger("Jump");
+
+            // Riproduce audio salto se presente
+            if (_playerAudio != null)
+                _playerAudio.PlayJump();
+
+            // Invoca evento di salto
+            OnJump.Invoke();
         }
+
+        // Aggiorna evento con velocitÃ  orizzontale
+        OnUpdateHorizontalSpeed.Invoke(_smoothedMoveInput.sqrMagnitude);
     }
 
     void FixedUpdate()
     {
-        // Movimento fisico del player
-        _body.MovePosition(
-            _body.position + _inputs * Speed * Time.fixedDeltaTime
-        );
+        // Applica la velocitÃ  calcolata al Rigidbody
+        Vector3 velocity = _smoothedMoveInput * Speed;
+        velocity.y = _body.velocity.y; // mantiene la componente verticale
+
+        _body.velocity = velocity;
+
+        // Blocca rotazioni indesiderate generate dalla fisica
+        _body.angularVelocity = Vector3.zero;
     }
 
     private void OnDrawGizmos()
     {
-        // Disegna la sfera del ground check per debug
-        if (_groundChecker != null)
-        {
-            Gizmos.color = Color.blue;
-            Gizmos.DrawWireSphere(_groundChecker.position, GroundDistance);
-        }
+        // Disegna una sfera per visualizzare il ground checker
+        if (_groundChecker == null) return;
+        Gizmos.color = Color.blue;
+        Gizmos.DrawWireSphere(_groundChecker.position, GroundDistance);
     }
 }

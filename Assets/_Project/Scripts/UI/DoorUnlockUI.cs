@@ -44,4 +44,10 @@ public class DoorUnlockUI : MonoBehaviour
         if (_unlockText != null)
             _unlockText.gameObject.SetActive(false); // nasconde il testo
     }
+
+    public void HideImmediately()  // Nasconde subito il testo
+    {
+        if (_unlockText != null)
+            _unlockText.gameObject.SetActive(false);
+    }
 }

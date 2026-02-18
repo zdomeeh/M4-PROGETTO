@@ -7,38 +7,26 @@ public class MovingBlock : MonoBehaviour
     [SerializeField] private float speed = 2f;
 
     private Vector3 target;
+    private Rigidbody _rb;
 
     private void Start()
     {
-        if (pointA != null) // Imposta la posizione iniziale del blocco al punto A
-        {
-            transform.position = pointA.position;
-        }
+        _rb = GetComponent<Rigidbody>();
+        _rb.isKinematic = true; // blocco si muove ma non reagisce alla fisica
+        if (pointA != null)
+            _rb.position = pointA.position;
 
-        target = pointB.position; // Imposta come target iniziale il punto B
+        target = pointB != null ? pointB.position : _rb.position;
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
-        if (pointA == null || pointB == null) return; // Controlla che entrambi i punti siano assegnati
+        if (pointA == null || pointB == null) return;
 
-        // Movimento lineare del blocco verso il target
-        transform.position = Vector3.MoveTowards(transform.position, target, speed * Time.deltaTime);
+        Vector3 nextPos = Vector3.MoveTowards(_rb.position, target, speed * Time.fixedDeltaTime);
+        _rb.MovePosition(nextPos);
 
-        if (Vector3.Distance(transform.position, target) < 0.1f)
-        {
-            // Cambia direzione
+        if (Vector3.Distance(nextPos, target) < 0.1f)
             target = target == pointA.position ? pointB.position : pointA.position;
-        }
-    }
-
-    private void OnCollisionStay(Collision collision)
-    {
-        Rigidbody rb = collision.collider.GetComponent<Rigidbody>(); // Se il player collide il blocco viene spostato
-
-        if (rb != null && collision.collider.CompareTag("Player")) // Verifica che ci sia un Rigidbody e che il collider sia il Player
-        {
-            rb.MovePosition(rb.position + (target - transform.position).normalized * speed * Time.deltaTime); // Muove il player nella stessa direzione del blocco, tenendo conto della velocità e deltaTime
-        }
     }
 }

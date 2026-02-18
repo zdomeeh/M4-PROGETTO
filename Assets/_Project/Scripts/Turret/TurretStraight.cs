@@ -29,6 +29,9 @@ public class TurretStraight : MonoBehaviour
             {
                 rb.velocity = _firePoint.forward * _projectileSpeed;
             }
+
+            // SUONO sparo
+            AudioManager.Instance?.PlayTurretShoot();
         }
     }
 

@@ -2,36 +2,73 @@
 
 public class CameraOrbit : MonoBehaviour
 {
-    [SerializeField] private Transform player;   // Player da seguire
-    [SerializeField] private float rotationSpeed = 5f;
-    [SerializeField] private float distance = 3f; // distanza dalla testa del player
-    [SerializeField] private float height = 1.5f; // altezza rispetto al player
+    [SerializeField] private Transform targetPivot; // Pivot del player da seguire
+    [SerializeField] private Vector3 offset = new Vector3(0, 1.5f, -4f);
 
-    private float horizontalAngle = 0f;
+    [SerializeField] private float mouseSensitivity = 2f;
+    [SerializeField] private float clampMin = -60f;
+    [SerializeField] private float clampMax = 60f;
+
+    private float pitch; // rotazione verticale
+    private float yaw;   // rotazione orizzontale
+    private bool camLock = false;
+
+    private void Awake()
+    {
+        if (targetPivot == null)
+        {
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            if (player != null)
+            {
+                // assume che il pivot sia un child del player chiamato "CameraPivot"
+                targetPivot = player.transform.Find("CameraPivot");
+                if (targetPivot == null)
+                    Debug.LogWarning("CameraPivot non trovato nel player!");
+            }
+        }
+
+        if (targetPivot != null)
+            yaw = targetPivot.eulerAngles.y;
+    }
 
     void Start()
     {
-        if (player == null)
-        {
-            Debug.LogWarning("CameraOrbit: player non assegnato!");
-        }
-
-        horizontalAngle = player.eulerAngles.y; // Allinea l'angolo della camera alla rotazione iniziale del player 
+        Cursor.visible = false;
+        Cursor.lockState = CursorLockMode.Locked;
     }
 
-    void LateUpdate()
+    private void LateUpdate()
     {
-        if (player == null) return;
+        if (camLock || targetPivot == null)
+            return;
 
-        // Muove l'angolo orizzontale con il mouse
-        horizontalAngle += Input.GetAxis("Mouse X") * rotationSpeed;
+        // input mouse
+        float mouseX = Input.GetAxis("Mouse X");
+        float mouseY = Input.GetAxis("Mouse Y");
 
-        // Calcolo posizione della camera
-        Vector3 offset = new Vector3(0, height, -distance);
-        Quaternion rotation = Quaternion.Euler(0, horizontalAngle, 0); // Rotazione attorno all’asse Y
-        transform.position = player.position + rotation * offset; // Posiziona la camera dietro e sopra il player
+        // aggiorna angoli
+        yaw += mouseX * mouseSensitivity;
+        pitch -= mouseY * mouseSensitivity;
+        pitch = Mathf.Clamp(pitch, clampMin, clampMax);
 
-        // Guarda sempre il player
-        transform.LookAt(player.position + Vector3.up * height);
+        // calcola rotazione finale della camera
+        Quaternion rotation = Quaternion.Euler(pitch, yaw, 0f);
+
+        // calcola posizione camera con offset relativo al pivot
+        Vector3 finalOffset = rotation * offset;
+        Vector3 cameraPosition = targetPivot.position + finalOffset;
+
+        // evita che la camera scenda sotto il pivot
+        if (cameraPosition.y < targetPivot.position.y + 0.5f)
+            cameraPosition.y = targetPivot.position.y + 0.5f;
+
+        transform.position = cameraPosition;
+        transform.LookAt(targetPivot.position);
     }
+
+    // blocca la camera (GameOver, Victory, ecc.)
+    public void EnableCamLock() => camLock = true;
+
+    // sblocca la camera
+    public void DisableCamLock() => camLock = false;
 }

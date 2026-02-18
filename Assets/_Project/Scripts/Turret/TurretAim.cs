@@ -61,6 +61,9 @@ public class TurretAim : MonoBehaviour
             Vector3 dir = (_player.position + Vector3.up * 1f - _firePoint.position).normalized;
             rb.velocity = dir * _projectileSpeed;
         }
+
+        // SUONO sparo
+        AudioManager.Instance?.PlayTurretShoot();
     }
 
     // Mostra il raggio in scena
