@@ -9,13 +9,12 @@ public class VictoryUI : MonoBehaviour
     [SerializeField] private GameObject _panelPerfectVictory;
 
     [SerializeField] private TextMeshProUGUI _coinsText;
-    [SerializeField] private TextMeshProUGUI _completionText; 
+    [SerializeField] private TextMeshProUGUI _completionText;
 
     [SerializeField] private GameObject _normalStar;   // stella grigia
     [SerializeField] private GameObject _perfectStar;  // stella gialla
     [SerializeField] private CanvasGroup _perfectStarCanvas; // canvas per fade della stella
 
-    [SerializeField] private CameraOrbit _cameraOrbit; // riferimento per la camera
     [SerializeField] private DoorUnlockUI _doorUnlockUI;
 
     [SerializeField] private float _starFadeDuration = 1f; // durata fade stella perfetta
@@ -53,7 +52,6 @@ public class VictoryUI : MonoBehaviour
             if (_completionText != null)
                 _completionText.text = "110% Completato";
 
-            
             _normalStar?.SetActive(true); // Mostra subito la stella normale
 
             // Imposta alpha 0 per la stella perfetta e avvia il fade
@@ -89,9 +87,10 @@ public class VictoryUI : MonoBehaviour
             return;
         }
 
-        // Blocca la camera
-        if (_cameraOrbit != null)
-            _cameraOrbit.EnableCamLock();
+        // Disabilita il controllo del player
+        RigidbodyCharacter player = FindObjectOfType<RigidbodyCharacter>();
+        if (player != null)
+            player.enabled = false;
 
         // Mostra e sblocca il cursore
         Cursor.visible = true;

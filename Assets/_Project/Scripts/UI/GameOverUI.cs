@@ -3,7 +3,6 @@ using UnityEngine.SceneManagement;
 
 public class GameOverUI : MonoBehaviour
 {
-    [SerializeField] private CameraOrbit _cameraOrbit; // riferimento per la camera
     [SerializeField] private LevelTimer _levelTimer; // riferimento per il timer
     [SerializeField] private DoorUnlockUI _doorUnlockUI;
 
@@ -16,9 +15,6 @@ public class GameOverUI : MonoBehaviour
         _shown = true;
 
         gameObject.SetActive(true);
-        
-        if (_cameraOrbit != null) // blocca la telecamera
-            _cameraOrbit.EnableCamLock();
 
         if (_levelTimer != null)
             _levelTimer.StopTimer(); // blocca il timer quando muori
@@ -27,6 +23,11 @@ public class GameOverUI : MonoBehaviour
             _doorUnlockUI.HideImmediately(); // nasconde la scritta "Porta sbloccata!"
 
         AudioManager.Instance?.PlayGameOver();
+
+        // Disabilita il controllo del player
+        RigidbodyCharacter player = FindObjectOfType<RigidbodyCharacter>();
+        if (player != null)
+            player.enabled = false;
 
         // Sblocca e mostra il cursore per poter cliccare i pulsanti
         Cursor.visible = true;
